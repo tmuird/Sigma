@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SigmaApp.Views.ConversationPage"  
+             x:Name="ConversationsPage"
+             BackgroundColor="White">
+  
+    <ContentPage.Content>
+        
+        <Grid Margin="10,5,10,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition />
+                <RowDefinition Height="100" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Text="Chats" FontFamily="Urbanist#800" FontSize="48" FontAttributes="Bold" TextColor="#FF000000" VerticalOptions="CenterAndExpand" />
+            <!--<Button  Grid.Row="0" Grid.Column="1" 
+                     Text="+"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="End"
+                Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.GoToAddContactCommand}" 
+                BackgroundColor="#3ddc97" />-->
+            <!--<Button  Grid.Row="0" Grid.Column="1" 
+                     Text="+"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="End"
+                Command="{Binding Source={x:Reference ConversationPage}, Path=BindingContext.GoToAddContactCommand}" 
+                BackgroundColor="#3ddc97" />-->
+            <CollectionView Grid.Row="1" Grid.ColumnSpan="100"
+               VerticalOptions="Start"
+                    ItemsSource="{Binding Conversations}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItem Text="Message"
+                                      Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.GoToChatCommand}" CommandParameter="{Binding .}"
+                                      BackgroundColor="#3ddc97"/>
+                            </SwipeView.RightItems>
+                            <Grid ColumnDefinitions="80, 80,*" RowDefinitions="80">
+                                
+                                <Frame Padding="0"
+                               Margin="5"
+                               HasShadow="False"
+                          
+                               CornerRadius="50"
+                               HorizontalOptions="Center"  Grid.Column="0">
+                                    <Image Aspect="AspectFill"
+                                   Source="https://upload.wikimedia.org/wikipedia/commons/d/d3/User_Circle.png"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"/>
+                                </Frame>
+                                <Label Grid.Column="1"
+                               VerticalOptions="Center"
+                               Text="{Binding Recipient.UserId}" 
+                               HorizontalTextAlignment="Center"
+                               FontSize="20"
+                               TextColor="Black"/>
+                                <Label Grid.Column="2"
+                               VerticalOptions="Center"
+                               Text="{Binding Messages[0].Content}" 
+                               HorizontalTextAlignment="Center"
+                               FontSize="20"
+                               TextColor="Black"/>
+                                <BoxView Grid.ColumnSpan="3"
+                                 HeightRequest="1"
+                                 VerticalOptions="End"
+                                 BackgroundColor="LightGray"/>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+        
+
+        
+    </ContentPage.Content>
+</ContentPage>

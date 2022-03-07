@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:SigmaApp.ViewModels"
+             xmlns:model="clr-namespace:SigmaApp.Models"
+             xmlns:converters="clr-namespace:SigmaApp.Converters"
+             x:Class="SigmaApp.Views.MessagePage"
+             Title="MessagePage"
+             BackgroundColor="White"
+             Shell.FlyoutBehavior="Disabled"
+             Shell.TabBarIsVisible="False">
+
+    <Grid Margin ="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Label Text="{Binding Conversation.user.UserId}"></Label>
+        <ListView 
+            x:Name="MessageList"
+            ItemsSource="{Binding CurrentConvo.Messages}" 
+                  Grid.Row="0" 
+                  SelectionMode="None"
+                  SeparatorVisibility="None"
+                  HasUnevenRows="True"
+                  >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout  Margin="10,0,0,0"
+                                      HorizontalOptions="FillAndExpand"
+                                      Orientation="Horizontal"
+                                      VerticalOptions="FillAndExpand">
+                            <Frame
+                                        Padding="10"
+                                        BackgroundColor="{Binding IsYourMessage, Converter={StaticResource MessageColour}}"
+                                        CornerRadius="15"
+                                        HasShadow="False"
+                                        HorizontalOptions="FillAndExpand"
+                                        IsClippedToBounds="True"
+                                        VerticalOptions="FillAndExpand">
+                                <StackLayout Orientation="Vertical">
+
+                                    <Label
+                                                FontAttributes="None"
+                                                FontSize="10"
+                                                HorizontalOptions="Start"
+                                                Text="{Binding Sender.UserId}"
+                                                TextColor="Black" />
+
+                                    <Label
+                                                FontAttributes="Bold"
+                                                IsVisible="true"
+                                                Text="{Binding Content}"
+                                                TextColor="Black" />
+
+                                    <StackLayout Orientation="Horizontal">
+                                        <Label
+                                                    FontAttributes="Italic"
+                                                    FontSize="10"
+                                                    HorizontalOptions="Start"
+                                                    Text="{Binding Creation}"
+                                                    TextColor="Black" />
+                                    </StackLayout>
+
+                                </StackLayout>
+                            </Frame>
+                            <!--<Frame 
+                              
+                                CornerRadius="45"
+                                HasShadow="True"
+                                BackgroundColor="LightGreen"
+                                IsVisible="{Binding IsMine}"
+                                Padding="20,10,10,10"
+                                HorizontalOptions="FillAndExpand"
+                                VerticalOptions="FillAndExpand">
+                                <StackLayout Padding="0,0,0,0" Margin="0,0,0,0"  Spacing="0" Orientation="Horizontal">
+
+                                    --><!--<Label Text="{Binding Sender.UserId}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"  Margin="20,0,0,0"></Label>--><!--
+                                    <Label Text="{Binding Content}" VerticalOptions="CenterAndExpand" HorizontalOptions="EndAndExpand"   Margin="20,0,20,0"></Label>
+                                </StackLayout>
+                            </Frame>-->
+                        </StackLayout>
+                       
+
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+        <Grid Grid.Row="1" Grid.VerticalOptions="End">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+          
+            
+              <Frame Grid.Row="1"
+                   Grid.Column="0"
+                   CornerRadius="45"
+                   HasShadow="True"
+                   IsClippedToBounds="True"
+                   Padding="15,0,0,0"
+                   >
+                <Grid Padding="0,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Entry Text="{Binding CurrentMessage}" TextColor="Black" Grid.Row="0" Grid.ColumnSpan="200" ></Entry>
+                </Grid>
+              </Frame>
+            <Button Text="Send" BackgroundColor="#3ddc97" Command="{Binding SendMessageCommand}" Grid.Row="0" Grid.Column="1" CornerRadius="20" VerticalOptions="End"></Button>
+
+
+        </Grid>
+       
+    </Grid>
+    
+</ContentPage>

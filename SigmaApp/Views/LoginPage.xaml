@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SigmaApp.Views.LoginPage"
+             xmlns:local="clr-namespace:SigmaApp.Views"
+             Shell.FlyoutBehavior="Disabled"
+             Shell.TabBarIsVisible="False"
+             BackgroundColor="{DynamicResource SecondaryColor}">
+
+    <ContentPage.Content>
+        <StackLayout Padding="10" VerticalOptions="Start"
+                     HorizontalOptions="FillAndExpand">
+            <Label Text="Welcome to Sigma" FontFamily="Urbanist#800" FontSize="48" FontAttributes="Bold" TextColor="#FF000000" />
+            <Label Text="Please choose a unique  &#10;username" FontFamily="Urbanist#800" FontSize="22" FontAttributes="Bold" TextColor="#FF000000"/>
+            <Entry x:Name="username" Placeholder="Username"/>
+            <Button Text="Register"
+                    Clicked="Register_Clicked" />
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
