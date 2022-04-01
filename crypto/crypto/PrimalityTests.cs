@@ -11,7 +11,7 @@ namespace crypto
         /// <param name="y"></param>
         /// <param name="modulus"></param>
         /// <returns></returns>
-        static BigInteger power(BigInteger x, BigInteger y, BigInteger modulus)
+        private static BigInteger power(BigInteger x, BigInteger y, BigInteger modulus)
         {
 
             BigInteger res = 1; // Initialize result
@@ -38,7 +38,7 @@ namespace crypto
         // This function is called for all k trials.
         // It returns false if n is composite and
         // returns false if n is probably prime.
-        // d is an odd number such that d*2<sup>r</sup>
+        // d is an odd number such that d*2
         // = n-1 for some r >= 1
         public static bool millerTest(BigInteger d, BigInteger n)
         {
@@ -95,7 +95,7 @@ namespace crypto
                 return true;
 
             // Find r such that n = 2^d * r + 1
-            // for some r >= 1
+            // when r >= 1
             BigInteger d = n - 1;
 
             while (d % 2 == 0) //check if n is odd because n - 1 should be an even number

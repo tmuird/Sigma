@@ -25,13 +25,16 @@
                 HorizontalOptions="End"
                 Command="{Binding Source={x:Reference ContactsPage}, Path=BindingContext.GoToAddContactCommand}" 
                 BackgroundColor="#3ddc97" />
-            <CollectionView Grid.Row="1" Grid.ColumnSpan="100"
+            <CollectionView Grid.Row="1" Grid.ColumnSpan="100" 
                VerticalOptions="Start"
-                    ItemsSource="{Binding Contacts}">
+                    ItemsSource="{Binding Contacts}" >
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <SwipeView>
                             <SwipeView.RightItems>
+                                <SwipeItem Text="Delete"
+                                      Command="{Binding Source={x:Reference ContactsPage}, Path=BindingContext.DeleteContactCommand}" CommandParameter="{Binding .}"
+                                      BackgroundColor="#FD5D5D"/>
                                 <SwipeItem Text="Message"
                                       Command="{Binding Source={x:Reference ContactsPage}, Path=BindingContext.StartChatCommand}" CommandParameter="{Binding .}"
                                       BackgroundColor="#3ddc97"/>
@@ -44,13 +47,13 @@
                                CornerRadius="50"
                                HorizontalOptions="Center">
                                     <Image Aspect="AspectFill"
-                                   Source="https://upload.wikimedia.org/wikipedia/commons/d/d3/User_Circle.png"
+                                   Source="https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png"
                                    VerticalOptions="Center"
                                    HorizontalOptions="Center"/>
                                 </Frame>
                                 <Label Grid.Column="1"
                                VerticalOptions="Center"
-                               Text="{Binding UserId}" 
+                               Text="{Binding UserID}" 
                                HorizontalTextAlignment="Center"
                                FontSize="20"
                                TextColor="Black"/>

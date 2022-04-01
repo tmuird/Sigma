@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="SigmaApp.Views.AddContactPage">
+    <Position X="7.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Views\AddContactPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SigmaApp.Views.ContactPage">
+    <Position X="4.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\ContactPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SigmaApp.Views.ConversationPage">
+    <Position X="0.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\ConversationPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SigmaApp.Views.LoginPage">
+    <Position X="10" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAACAAAAAAAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Views\LoginPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SigmaApp.Views.MessagePage">
+    <Position X="12.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\MessagePage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SigmaApp.ViewModels.ChatViewModel">
+    <Position X="3.25" Y="0.5" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>DwUAAAYCAIADAAAAAEEAAMIQBASAAQBAADABggQYBIA=</HashCode>
+      <FileName>ViewModels\ChatViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

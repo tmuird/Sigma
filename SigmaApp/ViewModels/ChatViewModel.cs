@@ -7,56 +7,57 @@ using Prism.Commands;
 using Refit;
 using SigmaApp.API;
 using SigmaApp.Models;
-
+using Microsoft.EntityFrameworkCore.Sqlite;
+using SigmaApp.Data;
 
 namespace SigmaApp.ViewModels
 {
-    public class ChatViewModel
+    public class ChatViewModel 
     {
 
 
 
-
-
-
+        //many variables within the viewmodel are public as they need to be accessed between classes / pages
         public string CurrentMessage { get; set; }
-        public HubConnection _connection;
+        private readonly HubConnection _connection;
         public IUserInfo api;
-
         public Conversation CurrentConvo { get; set; }
      
         public User Sender { get; set; }
         public ObservableCollection<User> Contacts { get; set; }
 
-        public ObservableCollection<Conversation> Conversations { get; set; } = new ObservableCollection<Conversation>();
-        public string url = "http://nea.speedi.codes";
+        public ObservableCollection<Conversation> Conversations { get; set; }
+        private const string _url = "https://nea.speedi.codes";
 
+        //public commands to be accessed from xaml
         public ICommand GoToChatCommand { get; }
         public ICommand StartChatCommand { get; }
-
-
+        public ICommand DeleteChatCommand { get; }
+        public ICommand DeleteContactCommand { get; }
+  
         public Command GoToAddContactCommand { get; }
         public Command SendMessageCommand { get; }
- 
+        public Command LogoutCommand { get; }
 
-        public Dictionary<string, string> UserKeys = new Dictionary<string, string>();
+        public Dictionary<string, string> UserKeys;
 
-        private byte[] myRSAAES;
+        private byte[] _myRsaAes;
 
-        public Aes myAesService = Aes.Create();
+        public Aes AesService = Aes.Create();
+
+        
 
 
-
-
-
+        
         public ChatViewModel()
         {
-            api = RestService.For<IUserInfo>($"{url}");
+           
+            api = RestService.For<IUserInfo>($"{_url}");
 
             Sender = App.CurrentUser;
 
             _connection = new HubConnectionBuilder()
-             .WithUrl($"{url}/chatHub",
+             .WithUrl($"{_url}/chatHub",
                options =>
                {
                    options.HttpMessageHandlerFactory = handler =>
@@ -73,12 +74,21 @@ namespace SigmaApp.ViewModels
                 )
              .Build();
 
+            //assign commands to their corresponding functions (functions will be triggered when command is executed in XAML)
             StartChatCommand = new DelegateCommand<User>(StartChat);
             GoToChatCommand = new DelegateCommand<Conversation>(GoToChat);
-            StartChatCommand = new DelegateCommand<User>(StartChat);
+         
+            DeleteChatCommand = new DelegateCommand<Conversation>(DeleteChat);
+            DeleteContactCommand = new DelegateCommand<User>(DeleteContact);
             GoToAddContactCommand = new Command(GoToAddContact);
+   
             SendMessageCommand = new Command(Send);
+            LogoutCommand = new Command(Logout);
+
+            //instantiate collections
             Contacts = new ObservableCollection<User>();
+            Conversations = new ObservableCollection<Conversation>();
+            UserKeys = new Dictionary<string, string>();
 
             try
             {
@@ -87,8 +97,30 @@ namespace SigmaApp.ViewModels
                 {
                     try
                     {
-                        message.Content = (DecryptStringFromBytes_Aes(Convert.FromBase64String(message.Content), Convert.FromBase64String(UserKeys[(message.Sender.UserId)]), Convert.FromBase64String(message.InitVector)));
+                        //creates the HMAC to compare against the message HMAC to verify integrity/authenticity
+                        string localHMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(AesService.Key, Convert.FromBase64String(message.Content), _myRsaAes)), Convert.ToBase64String(AesService.Key));
+                        if (message.HMAC == localHMAC)
+                        {
+                            Console.WriteLine("Valid HMAC!");
 
+                        }
+                        else
+                        {
+                            App.Current.MainPage.DisplayAlert("Warning", "Invalid hash", "Ok");
+
+                        }
+                        //sets the messageId to null to avoid conflicts with localdb, upon being added an autoincremented ID is added
+                        message.MessageID = null;
+                        //shows that the message is being received and not send so when formatting the messages it can be displayed in the correct position
+                        message.IsMine = false;
+
+                        //decrypts the message content using RSA decrypted AES
+                        message.Content = (DecryptStringFromBytes_Aes(Convert.FromBase64String(message.Content), Convert.FromBase64String(UserKeys[(message.Sender.UserID)]), Convert.FromBase64String(message.InitVector)));
+                        using (var context = new LocalContext())
+                        {
+                           
+                        }
+                           
                     }
                     catch (Exception ext)
                     {
@@ -97,19 +129,21 @@ namespace SigmaApp.ViewModels
 
                     }
 
-                    message.IsMine = false;
+                   
 
                     try
                     {
 
-
-                        if (Conversations.Any(convo => convo.Recipient.UserId == message.Sender.UserId))
+                        //if conversation already exists add the message to it, otherwise create a new conversation
+                        if (Conversations.Any(convo => convo.Recipient.UserID == message.Sender.UserID))
 
                         {
 
-                            Conversation userConvo = Conversations.Single(s => s.Recipient.UserId == message.Sender.UserId);
+                            Conversation userConvo = Conversations.Single(s => s.Recipient.UserID == message.Sender.UserID);
                             CurrentConvo = userConvo;
+                          
                             AddMessage(message);
+                            
                         }
                         else
                         {
@@ -123,7 +157,9 @@ namespace SigmaApp.ViewModels
                             try
                             {
                                 CurrentConvo = newConvo;
+                               
                                 AddMessage(message);
+                             
                             }
                             catch (Exception ex)
                             {
@@ -147,8 +183,11 @@ namespace SigmaApp.ViewModels
                     try
                     {
                         byte[] RSAAES = Convert.FromBase64String(key[1]);
-
-                        UserKeys.Add(key[0], crypto.RSA.Decrypt(App.KeyChain['d'], App.KeyChain['N'], RSAAES));
+                        if (!UserKeys.ContainsKey(key[0]))
+                        {
+                            UserKeys.Add(key[0], crypto.RSA.Decrypt(App.KeyChain['d'], App.KeyChain['N'], RSAAES));
+                        }
+                       
 
                     }
                     catch (Exception exc)
@@ -162,11 +201,63 @@ namespace SigmaApp.ViewModels
             }
             catch (Exception)
             {
-
+                string message = Conversations[0].Messages.Last().Content;
                 throw;
             }
 
 
+        }
+
+    
+        /// <summary>
+        /// Deletes a contact from the DB and Program
+        /// </summary>
+        /// <param name="contact"></param>
+        private void DeleteContact(User contact)
+        {
+            try
+            {
+                if (Conversations.Any(s => s.Recipient == contact))
+                {
+                    DeleteChat(Conversations.Single(s => s.Recipient == contact));
+                }
+                
+                Contacts.Remove(contact);
+                using (var context = new LocalContext())
+                {
+                    context.Users.Remove(contact);
+                    context.SaveChanges();
+                }
+                    
+            
+               
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+           
+        }
+
+        private void DeleteChat(Conversation convo)
+        {
+            try
+            {
+                Conversations.Remove(convo);
+                using (var context = new LocalContext())
+                {
+                    context.Conversations.Remove(convo);
+                    context.SaveChanges();
+                }
+                    
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+            
         }
 
         /// <summary>
@@ -174,9 +265,11 @@ namespace SigmaApp.ViewModels
         /// </summary>
         public void InitCrypt()
         {
-            myAesService.Padding = PaddingMode.PKCS7;
-            myAesService.GenerateKey();
-            myAesService.GenerateIV();
+
+            //Upon the AES being initiliased, the padding is unsured 
+            AesService.Padding = PaddingMode.PKCS7;
+            AesService.GenerateKey();
+            AesService.GenerateIV();
 
         }
 
@@ -203,50 +296,61 @@ namespace SigmaApp.ViewModels
         /// sets up the environment for a conversation, including necessary cryptography
         /// </summary>
         /// <param name="reciever"></param>
-        public async void StartChat(User reciever)
+        private async void StartChat(User reciever)
         {
             try
             {
 
 
-                if (Conversations.Any(convo => convo.Recipient.UserId == reciever.UserId))
+                if (Conversations.Any(convo => convo.Recipient.UserID == reciever.UserID))
                 {
 
-                    Conversation userConvo = Conversations.Single(s => s.Recipient.UserId == reciever.UserId);
-
-                    CurrentConvo = userConvo;
+              
+                    GoToChat(Conversations.Single(s => s.Recipient.UserID == reciever.UserID));
                 }
                 else
                 {
 
                     Conversation newConvo = new Conversation()
                     {
+                     
                         Recipient = reciever,
                     };
-
-                    myRSAAES = crypto.RSA.Encrypt(Convert.FromBase64String(reciever.PublicKey.Split(",")[0]), Convert.FromBase64String(reciever.PublicKey.Split(",")[1]), Convert.ToBase64String(myAesService.Key));
-                    SendRSAAES(Convert.ToBase64String(myRSAAES), reciever.UserId);
+                 
+                   
+                    _myRsaAes = crypto.RSA.Encrypt(Convert.FromBase64String(reciever.PublicKey.Split(",")[0]), Convert.FromBase64String(reciever.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
+                    SendRSAAES(Convert.ToBase64String(_myRsaAes), reciever.UserID);
                     Conversations.Add(newConvo);
+                   
                     CurrentConvo = newConvo;
+                    await Shell.Current.GoToAsync($"MessagePage?recipient={reciever}");
+                    using (var context = new LocalContext())
+                    {
+                        context.Conversations.Add(newConvo);
+                        context.SaveChanges();
+                    }
+                        
                 }
+              
             }
             catch (Exception ex)
             {
 
-                App.Current.MainPage.DisplayAlert("Warning", ex.Message, "Ok");
+                await App.Current.MainPage.DisplayAlert("Warning", ex.Message, "Ok");
             }
-            await Shell.Current.GoToAsync($"MessagePage?recipient={reciever}");
+        
         }
         /// <summary>
         /// Sends the message to the signalR hub and then the determined user
         /// </summary>
         /// <param name="message"></param>
-        public async Task SendToUser(Message message)
+        private async Task SendToUser(Message message)
         {
 
             try
             {
-
+              
+                message.IsMine = true;
                 await _connection.InvokeAsync("SendToUser",
                     message);
             }
@@ -266,17 +370,17 @@ namespace SigmaApp.ViewModels
             try
             {
                 await _connection.InvokeAsync("SendRSAAES",
-                    rsaAES, App.CurrentUser.UserId, receiverId);
+                    rsaAES, App.CurrentUser.UserID, receiverId);
             }
             catch (Exception ex)
             {
-                App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex, "Ok");
+                await App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex, "Ok");
             }
         }
 
-        public async Task GetUserID()
+        private async Task GetUserId()
         {
-            await _connection.InvokeAsync("GetUserID");
+            await _connection.InvokeAsync("GetUserId");
         }
         public async Task Connect()
         {
@@ -298,6 +402,22 @@ namespace SigmaApp.ViewModels
             }
         }
 
+        public async Task Disconnect()
+        {
+
+
+
+            try
+            {
+                await _connection.StopAsync();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
 
         /// <summary>
         /// Passes the selected conversation to the chat page and opens it
@@ -309,24 +429,60 @@ namespace SigmaApp.ViewModels
             {
                 CurrentConvo = conversation;
                 //await App.Current.MainPage.DisplayAlert("Warning", conversation.user.PublicKey, "Ok");
-                myRSAAES = crypto.RSA.Encrypt(Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[0]), Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[1]), Convert.ToBase64String(myAesService.Key));
-                SendRSAAES(Convert.ToBase64String(myRSAAES), conversation.Recipient.UserId);
-                //string jsonConvo = JsonSerializer.Serialize(conversation);
-                //App.Current.MainPage.DisplayAlert("Warning", jsonConvo, "Ok");
+                _myRsaAes = crypto.RSA.Encrypt(Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[0]), Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
+                SendRSAAES(Convert.ToBase64String(_myRsaAes), conversation.Recipient.UserID);
 
-                await Shell.Current.GoToAsync($"MessagePage?recipient={conversation.Recipient.UserId}");
+                await Shell.Current.GoToAsync($"MessagePage?recipient={conversation.Recipient.UserID}");
             }
             catch (Exception ex)
             {
 
-                App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex, "Ok");
+                Console.WriteLine(ex.Message);
             }
 
 
         }
-        private void AddMessage(Message message)
+        public async void Logout()
         {
-            CurrentConvo.Messages.Add(message);
+            SecureStorage.RemoveAll();
+            App.CurrentUser = null;
+            Conversations.Clear();
+            Contacts.Clear();
+            Disconnect();
+            Shell.Current.GoToAsync($"LoginPage");
+
+
+        }
+        /// <summary>
+        /// Adds a message to the database and collections
+        /// </summary>
+        /// <param name="message"></param>
+        public void AddMessage(Message message)
+        {
+            try
+            {
+ 
+
+                message.ConversationID = CurrentConvo.ConversationID;
+                (Conversations.Single(p => p.Recipient == CurrentConvo.Recipient)).RecentMessage = message.Content;
+     
+                CurrentConvo.Messages.Add(message);
+                using (var context = new LocalContext())
+                {
+                  
+                    context.Messages.Add(message);
+                    context.SaveChanges();
+                }
+    
+
+            }
+            catch (Exception ex) 
+            {
+
+                App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex, "Ok");
+            }
+           
+
         }
 
 
@@ -335,35 +491,45 @@ namespace SigmaApp.ViewModels
         /// </summary>
         private void Send()
         {
-
-
-            string ClearContent = CurrentMessage;
-            Message message = new Message()
+            if (CurrentMessage != null && CurrentMessage != "")
             {
-                IsMine = true,
-                Sender = App.CurrentUser,
-                Receiver = CurrentConvo.Recipient,
-                Creation = DateTime.Now,
+                //stores the message in a variable so that it can be added locally in plaintext
+                string clearContent = CurrentMessage;
+                Message message = new Message()
+                {
+                    IsMine = true,
+                    Sender = App.CurrentUser,
+                    Receiver = CurrentConvo.Recipient,
+                    Creation = DateTime.Now,
 
-                Content = CurrentMessage,
+                    Content = CurrentMessage,
 
-            };
-            AddMessage(message);
-            //encrypts plaintext using aes
-            byte[] encryptedBytes = EncryptStringToBytes_Aes(CurrentMessage, myAesService.Key, myAesService.IV);
-            //format as base64 so that it can be sent as a string
-            message.Content = Convert.ToBase64String(encryptedBytes);
-            //debugging purposes
-            App.Current.MainPage.DisplayAlert("Warning", Convert.ToBase64String(encryptedBytes), "Ok");
-            //generate the hmac for hashing purposes
-            message.HMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(myAesService.Key, encryptedBytes, myRSAAES)), Convert.ToBase64String(myAesService.Key));
-            message.InitVector = Convert.ToBase64String(myAesService.IV);
-  
-            SendToUser(message);
+                };
+                AddMessage(message);
+           
 
-            //set the messages content back to the plaintext content so that it shows in the UI as plaintext
-            message.Content = ClearContent;
 
+                //encrypts plaintext using aes
+                byte[] encryptedBytes = EncryptStringToBytes_Aes(CurrentMessage, AesService.Key, AesService.IV);
+                //format as base64 so that it can be sent as a string
+                message.Content = Convert.ToBase64String(encryptedBytes);
+                //debugging purposes
+   
+                //generate the hmac for hashing purposes
+                message.HMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(AesService.Key, encryptedBytes, _myRsaAes)), Convert.ToBase64String(AesService.Key));
+                message.InitVector = Convert.ToBase64String(AesService.IV);
+
+                SendToUser(message);
+
+                //set the messages content back to the plaintext content so that it shows in the UI as plaintext
+                message.Content = clearContent;
+            }
+            else
+            {
+                App.Current.MainPage.DisplayAlert("Warning", "Message cannot be empty", "Ok");
+            }
+           
+            
 
 
         }
@@ -375,7 +541,7 @@ namespace SigmaApp.ViewModels
         /// <param name="second"></param>
         /// <param name="third"></param>
         /// <returns></returns>
-        static byte[] Combine(byte[] first, byte[] second, byte[] third)
+        private static byte[] Combine(byte[] first, byte[] second, byte[] third)
         {
             byte[] ret = new byte[first.Length + second.Length + third.Length];
             Buffer.BlockCopy(first, 0, ret, 0, first.Length);

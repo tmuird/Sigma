@@ -4,7 +4,8 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:SigmaApp"
        xmlns:views="clr-namespace:SigmaApp.Views"
-       NavigationPage.HasNavigationBar="False">
+       NavigationPage.HasNavigationBar="False"
+       Shell.NavBarIsVisible="False">
     <!--
         The overall app visual hierarchy is defined here, along with navigation.
         Ensure atleast a Flyout item or a TabBar is defined for Shell to work
@@ -28,9 +29,9 @@
                 <Setter Property="Shell.TabBarForegroundColor"
                         Value="White" />
                 <Setter Property="Shell.TabBarUnselectedColor"
-                        Value="#95FFFFFF" />
+                        Value="Black" />
                 <Setter Property="Shell.TabBarTitleColor"
-                        Value="White" />
+                        Value="Black" />
             </Style>
             <Style BasedOn="{StaticResource BaseStyle}"
                    TargetType="TabBar" />
@@ -98,33 +99,17 @@
         FlyoutDisplayOptions="AsMultipleItems" will create a separate flyout item for each child element
     -->
 
-    <TabBar>
-        <!--<Tab IsEnabled="False">
-            <ShellContent ContentTemplate="{DataTemplate views:LoginPage}"
-                      Route="login" />
-        </Tab>-->
+    <TabBar x:Name="tabs">
 
-        <!--<Tab Title="Chat">
-            <ShellContent ContentTemplate="{DataTemplate views:ChatPage}"
-                      Route="chat" />
-        </Tab>-->
         <Tab Title="Chats">
             <ShellContent ContentTemplate="{DataTemplate views:ConversationPage}"
                       Route="ConversationPage" />
         </Tab>
-        <Tab Title="Contacts" > 
+        <Tab Title="Contacts"> 
             <ShellContent ContentTemplate="{DataTemplate views:ContactPage}"
-                      Route="ContactPage" />
+                      Route="ContactPage"/>
         </Tab>
-        <!--<Tab Title="Home">
-            <ShellContent ContentTemplate="{DataTemplate views:HomePage}"
-                      Route="HomePage" />
-        </Tab>-->
-     
-        <!--<Tab Title="Chats">
-            <ShellContent ContentTemplate="{DataTemplate views:}"
-                      Route="ChatPage" />
-        </Tab>-->
+ 
 
 
     </TabBar>

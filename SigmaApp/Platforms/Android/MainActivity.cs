@@ -14,5 +14,6 @@ public class MainActivity : MauiAppCompatActivity
         //    (message, certificate, chain, sslPolicyErrors) => true;
 
         base.OnCreate(bundle);
+
     }
 }

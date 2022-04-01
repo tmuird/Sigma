@@ -11,11 +11,13 @@ namespace SigmaApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
-                if ((bool)value)
-                    return App.Current.Resources["ReceiverColor"];
+            if ((bool)value)
+            {
+                return "#3ddc97";
+            }
 
-            return App.Current.Resources["SenderColor"];
+
+            return "#00B1A9";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

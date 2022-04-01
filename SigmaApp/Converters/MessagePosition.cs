@@ -11,11 +11,20 @@ namespace SigmaApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
-                if ((bool) value)
-                    return new Thickness(80, 10, 10, 10);
-
-            return new Thickness(10, 10, 80, 10);
+           
+            if ((bool)value)
+            {
+                return new Thickness(250, 0, 0, 0);
+            }
+            else
+            {
+                return new Thickness(0, 0, 0, 0);
+            }
+                    
+            
+                
+           
+            
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

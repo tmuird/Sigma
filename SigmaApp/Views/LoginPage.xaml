@@ -14,8 +14,17 @@
             <Label Text="Please choose a unique  &#10;username" FontFamily="Urbanist#800" FontSize="22" FontAttributes="Bold" TextColor="#FF000000"/>
             <Entry x:Name="username" Placeholder="Username"/>
             <Button Text="Register"
-                    Clicked="Register_Clicked" />
+                    Clicked="Register_Clicked" 
+                    BackgroundColor="#3ddc97"/>
 
-        </StackLayout>
+            <ActivityIndicator x:Name="activity"  
+                               IsRunning="False"  
+                               IsEnabled="False"  
+                               IsVisible="False"  
+                               Color="#3ddc97"  
+                               BackgroundColor="Transparent"/>
+
+
+</StackLayout>
     </ContentPage.Content>
 </ContentPage>

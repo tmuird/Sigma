@@ -20,12 +20,12 @@
             </Grid.ColumnDefinitions>
 
             <Label Grid.Row="0" Text="Chats" FontFamily="Urbanist#800" FontSize="48" FontAttributes="Bold" TextColor="#FF000000" VerticalOptions="CenterAndExpand" />
-            <!--<Button  Grid.Row="0" Grid.Column="1" 
-                     Text="+"
+            <Button  Grid.Row="0" Grid.Column="1" 
+                     Text="Log Out"
                 VerticalOptions="CenterAndExpand"
                 HorizontalOptions="End"
-                Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.GoToAddContactCommand}" 
-                BackgroundColor="#3ddc97" />-->
+                Command="{Binding LogoutCommand}" 
+                BackgroundColor="#3ddc97" />
             <!--<Button  Grid.Row="0" Grid.Column="1" 
                      Text="+"
                 VerticalOptions="CenterAndExpand"
@@ -39,9 +39,13 @@
                     <DataTemplate>
                         <SwipeView>
                             <SwipeView.RightItems>
+                                <SwipeItem Text="Delete"
+                                      Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.DeleteChatCommand}" CommandParameter="{Binding .}"
+                                      BackgroundColor="#FD5D5D"/>
                                 <SwipeItem Text="Message"
                                       Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.GoToChatCommand}" CommandParameter="{Binding .}"
                                       BackgroundColor="#3ddc97"/>
+                                
                             </SwipeView.RightItems>
                             <Grid ColumnDefinitions="80, 80,*" RowDefinitions="80">
                                 
@@ -52,19 +56,19 @@
                                CornerRadius="50"
                                HorizontalOptions="Center"  Grid.Column="0">
                                     <Image Aspect="AspectFill"
-                                   Source="https://upload.wikimedia.org/wikipedia/commons/d/d3/User_Circle.png"
+                                   Source="https://iconarchive.com/download/i94479/blackvariant/button-ui-system-apps/Messages-2.ico"
                                    VerticalOptions="Center"
                                    HorizontalOptions="Center"/>
                                 </Frame>
                                 <Label Grid.Column="1"
                                VerticalOptions="Center"
-                               Text="{Binding Recipient.UserId}" 
+                               Text="{Binding Recipient.UserID}" 
                                HorizontalTextAlignment="Center"
                                FontSize="20"
                                TextColor="Black"/>
                                 <Label Grid.Column="2"
                                VerticalOptions="Center"
-                               Text="{Binding Messages[0].Content}" 
+                               Text="{Binding RecentMessage}" 
                                HorizontalTextAlignment="Center"
                                FontSize="20"
                                TextColor="Black"/>

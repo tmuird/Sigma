@@ -12,7 +12,7 @@ namespace crypto
         /// <param name="p"></param>
         /// <param name="q"></param>
         /// <returns></returns>
-        public static bool IsCoPrime(BigInteger p, BigInteger q)
+        private static bool IsCoPrime(BigInteger p, BigInteger q)
         {
 
             //returns true if GCD of p and q is 1 (relatively prime)
@@ -32,7 +32,7 @@ namespace crypto
         /// <param name="p"></param>
         /// <param name="q"></param>
         /// <returns></returns>
-        public static BigInteger GetGCD(BigInteger p, BigInteger q)
+        private static BigInteger GetGCD(BigInteger p, BigInteger q)
         {
             //euclidian algorithm
             if (q == 0)
@@ -46,7 +46,7 @@ namespace crypto
         /// </summary>
         /// <param name="plaintext"></param>
         /// <returns></returns>
-        public static BigInteger StringToBigInt(string plaintext)
+        private static BigInteger StringToBigInt(string plaintext)
         {
             byte[] bytes = Encoding.ASCII.GetBytes(plaintext);
             BigInteger bigInteger = new BigInteger(bytes.Concat(new byte[] { 0 }).ToArray());
@@ -58,7 +58,7 @@ namespace crypto
         /// </summary>
         /// <param name="bigInteger"></param>
         /// <returns></returns>
-        public static string BigIntToString(BigInteger bigInteger)
+        private static string BigIntToString(BigInteger bigInteger)
         {
             byte[] byteArray = bigInteger.ToByteArray();
             string str = Encoding.ASCII.GetString(byteArray);
@@ -71,7 +71,7 @@ namespace crypto
         /// </summary>
         /// <param name="keySize"></param>
         /// <returns></returns>
-        public static BigInteger GenerateLargePrime(int keySize)
+        private static BigInteger GenerateLargePrime(int keySize)
         {
             //return random large prime of keysize bits in size
             while (true)
@@ -98,14 +98,16 @@ namespace crypto
             BigInteger e, d, N;
 
             e = d = N = 0;
-            //get primes p & q
+
+            //generate large primes p & q
             BigInteger p = GenerateLargePrime(keySize);
             BigInteger q = GenerateLargePrime(keySize);
 
 
             N = p * q; //RSA modulus
-            BigInteger phiN = (p - 1) * (q - 1); //totient
-            //choose e, e is coprime with phiN & 1 < e <= phiN
+            BigInteger phiN = (p - 1) * (q - 1); //totient rule
+
+            //choose e, e is coprime with phiN and 1 < e <= phiN
             while (true)
             {
 
@@ -134,7 +136,7 @@ namespace crypto
         /// <param name="e"></param>
         /// <param name="phiN"></param>
         /// <returns></returns>
-        public static BigInteger ModInverse(BigInteger e, BigInteger phiN)
+        private static BigInteger ModInverse(BigInteger e, BigInteger phiN)
         {
             BigInteger m0 = phiN;
             BigInteger y = 0, x = 1;
