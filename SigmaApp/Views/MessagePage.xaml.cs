@@ -1,45 +1,39 @@
 using SigmaApp.Models;
 using System.Collections.Specialized;
 
-namespace SigmaApp.Views;
-
-public partial class MessagePage : ContentPage
+namespace SigmaApp.Views
 {
-    public Conversation CurrentConversation { get; set; }
-
-    public MessagePage()
+    public partial class MessagePage : ContentPage
     {
-       
-        this.BindingContext = App.chat;
-    
-        InitializeComponent();
-        CurrentConversation = App.chat.CurrentConvo;
+        public Conversation CurrentConversation { get; set; }
 
-        //trigger event when list updated (scroll to bottom)
-        CurrentConversation.Messages.CollectionChanged += listChanged;
-
-        
-
-
-    }
-    private async void Send_Clicked(object sender, EventArgs e)
-    {
-       
-        message.Text = "";
-    }
-
-    private void listChanged(object sender, NotifyCollectionChangedEventArgs args)
-    {
-        try
+        public MessagePage()
         {
-            MessageList.ScrollTo(CurrentConversation.Messages[CurrentConversation.Messages.Count - 1], 0, true);
+            InitializeComponent();
+            this.BindingContext = App.chat;
+            CurrentConversation = App.chat.CurrentConvo;
+
+            CurrentConversation.Messages.CollectionChanged += ListChanged;
         }
-        catch (Exception ex)
+
+        private void ListChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
-
-            DisplayAlert("Alert", ex.Message, "OK");
+            try
+            {
+                if (CurrentConversation.Messages.Count > 0)
+                {
+                    MessageList.ScrollTo(CurrentConversation.Messages[CurrentConversation.Messages.Count - 1], ScrollToPosition.End, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                DisplayAlert("Alert", ex.Message, "OK");
+            }
         }
-       
-    }
 
+        private void Send_Clicked(object sender, EventArgs e)
+        {
+            messageEntry.Text = string.Empty;
+        }
+    }
 }

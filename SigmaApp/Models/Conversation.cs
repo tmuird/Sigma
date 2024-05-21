@@ -12,15 +12,9 @@ namespace SigmaApp.Models
         public string RecentMessage { get; set; }
 
         [NotMapped]
-        public ObservableCollection<Message> Messages { get; set; }
+        public ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
 
-        
         public User Recipient { get; set; }
-
-        public Conversation()
-        {
-            Messages = new ObservableCollection<Message>();
-        }
-
     }
+
 }

@@ -7,8 +7,6 @@ namespace SigmaApp.Models
     {
         [Key]
         public string UserID { get; set; } = null!;
-
         public string? PublicKey { get; set; }
-     
     }
 }

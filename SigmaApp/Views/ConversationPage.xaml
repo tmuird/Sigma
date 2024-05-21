@@ -1,89 +1,37 @@
 <?xml version="1.0" encoding="utf-8" ?>
-
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SigmaApp.Views.ConversationPage"  
+             x:Class="SigmaApp.Views.ConversationPage"
+             Title="Chats"
              x:Name="ConversationsPage"
              BackgroundColor="White">
-  
-    <ContentPage.Content>
-        
-        <Grid Margin="10,5,10,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="80" />
-                <RowDefinition />
-                <RowDefinition Height="100" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Text="Chats" FontFamily="Urbanist#800" FontSize="48" FontAttributes="Bold" TextColor="#FF000000" VerticalOptions="CenterAndExpand" />
-            <Button  Grid.Row="0" Grid.Column="1" 
-                     Text="Log Out"
-                VerticalOptions="CenterAndExpand"
-                HorizontalOptions="End"
-                Command="{Binding LogoutCommand}" 
-                BackgroundColor="#3ddc97" />
-            <!--<Button  Grid.Row="0" Grid.Column="1" 
-                     Text="+"
-                VerticalOptions="CenterAndExpand"
-                HorizontalOptions="End"
-                Command="{Binding Source={x:Reference ConversationPage}, Path=BindingContext.GoToAddContactCommand}" 
-                BackgroundColor="#3ddc97" />-->
-            <CollectionView Grid.Row="1" Grid.ColumnSpan="100"
-               VerticalOptions="Start"
-                    ItemsSource="{Binding Conversations}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <SwipeView>
-                            <SwipeView.RightItems>
-                                <SwipeItem Text="Delete"
-                                      Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.DeleteChatCommand}" CommandParameter="{Binding .}"
-                                      BackgroundColor="#FD5D5D"/>
-                                <SwipeItem Text="Message"
-                                      Command="{Binding Source={x:Reference ConversationsPage}, Path=BindingContext.GoToChatCommand}" CommandParameter="{Binding .}"
-                                      BackgroundColor="#3ddc97"/>
-                                
-                            </SwipeView.RightItems>
-                            <Grid ColumnDefinitions="80, 80,*" RowDefinitions="80">
-                                
-                                <Frame Padding="0"
-                               Margin="5"
-                               HasShadow="False"
-                          
-                               CornerRadius="50"
-                               HorizontalOptions="Center"  Grid.Column="0">
-                                    <Image Aspect="AspectFill"
-                                   Source="https://iconarchive.com/download/i94479/blackvariant/button-ui-system-apps/Messages-2.ico"
-                                   VerticalOptions="Center"
-                                   HorizontalOptions="Center"/>
-                                </Frame>
-                                <Label Grid.Column="1"
-                               VerticalOptions="Center"
-                               Text="{Binding Recipient.UserID}" 
-                               HorizontalTextAlignment="Center"
-                               FontSize="20"
-                               TextColor="Black"/>
-                                <Label Grid.Column="2"
-                               VerticalOptions="Center"
-                               Text="{Binding RecentMessage}" 
-                               HorizontalTextAlignment="Center"
-                               FontSize="20"
-                               TextColor="Black"/>
-                                <BoxView Grid.ColumnSpan="3"
-                                 HeightRequest="1"
-                                 VerticalOptions="End"
-                                 BackgroundColor="LightGray"/>
-                            </Grid>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
-        
+        <Label Grid.Row="0" Text="Chats" FontSize="48" FontAttributes="Bold" TextColor="Black" />
+        <Button Grid.Row="0" Text="Log Out" Command="{Binding LogoutCommand}" BackgroundColor="#3ddc97" TextColor="White" HorizontalOptions="End" VerticalOptions="Center"/>
 
-        
-    </ContentPage.Content>
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Conversations}" VerticalOptions="FillAndExpand">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItem Text="Delete" Command="{Binding Path=BindingContext.DeleteChatCommand, Source={x:Reference ConversationsPage}}" CommandParameter="{Binding .}" BackgroundColor="#FD5D5D"/>
+                            <SwipeItem Text="Message" Command="{Binding Path=BindingContext.GoToChatCommand, Source={x:Reference ConversationsPage}}" CommandParameter="{Binding .}" BackgroundColor="#3ddc97"/>
+                        </SwipeView.RightItems>
+                        <Grid ColumnDefinitions="80, *, *" RowDefinitions="80" Margin="0,10">
+                            <Frame CornerRadius="40" WidthRequest="70" HeightRequest="70" VerticalOptions="Center" HorizontalOptions="Center">
+                                <Image Aspect="AspectFill" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            </Frame>
+                            <Label Grid.Column="1" VerticalOptions="Center" Text="{Binding Recipient.UserID}" FontSize="20" TextColor="Black"/>
+                            <Label Grid.Column="2" VerticalOptions="Center" Text="{Binding RecentMessage}" FontSize="20" TextColor="Gray"/>
+                        </Grid>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

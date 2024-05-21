@@ -8,13 +8,8 @@ using System.Collections.ObjectModel;
 namespace SigmaApp;
 
 public partial class App : Application
-
-
 {
-
-
     public static IUserInfo api;
-
     public static string CurrentPage = "ChatPage";
     public static Dictionary<char, byte[]> KeyChain;
     public static User CurrentUser;
@@ -23,7 +18,7 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-       
+
         chat = new ChatViewModel();
         MainPage = new AppShell();
         if (SecureStorage.GetAsync("Name").Result != null)
@@ -34,14 +29,8 @@ public partial class App : Application
         {
             GoToLogin();
         }
-            
-
-
     }
-    /// <summary>
-    /// Set up current theme from app settings
-    /// </summary>
-    
+
     public async Task GoToLogin()
     {
         await Shell.Current.GoToAsync("LoginPage");
@@ -56,15 +45,14 @@ public partial class App : Application
             PublicKey = $"{SecureStorage.GetAsync("PublicKey").Result},{SecureStorage.GetAsync("Modulus").Result}"
         };
         App.KeyChain = new Dictionary<char, byte[]>()
-            {
-                { 'e', Convert.FromBase64String(SecureStorage.GetAsync("PublicKey").Result) },
-                { 'd', Convert.FromBase64String(SecureStorage.GetAsync("PrivateKey").Result) },
-                { 'N', Convert.FromBase64String(SecureStorage.GetAsync("Modulus").Result) }
-            };
-      
-        
+        {
+            { 'e', Convert.FromBase64String(SecureStorage.GetAsync("PublicKey").Result) },
+            { 'd', Convert.FromBase64String(SecureStorage.GetAsync("PrivateKey").Result) },
+            { 'N', Convert.FromBase64String(SecureStorage.GetAsync("Modulus").Result) }
+        };
+
         App.chat.Connect();
-        App.chat.InitCrypt();
+        App.chat.InitCrypt(); // Ensure InitCrypt is called here
         try
         {
             Console.WriteLine("\nLoading Cached Data...");
@@ -77,9 +65,8 @@ public partial class App : Application
                 foreach (Conversation conversation in App.chat.Conversations)
                 {
                     Console.WriteLine($"\nLoading Conversation: {conversation.ConversationID}\nMessages:");
-                    foreach (Message message in (context.Messages.Where(m => m.Conversation.ConversationID == conversation.ConversationID)))
+                    foreach (Message message in context.Messages.Where(m => m.Conversation.ConversationID == conversation.ConversationID))
                     {
-                       
                         if ((bool)message.IsMine)
                         {
                             message.Sender = App.CurrentUser;
@@ -92,21 +79,17 @@ public partial class App : Application
                         }
                         Console.WriteLine($"Recipient: {message.Receiver.UserID} Content:{message.Content}");
                         message.Conversation = conversation;
-                       conversation.Messages.Add(message);
+                        conversation.Messages.Add(message);
                     }
                 }
-                //    context.Entry(App.chat.Contacts).State = EntityState.Detached;
-                //context.Entry(App.chat.Conversations).State = EntityState.Detached;
                 context.SaveChanges();
             }
-           
-               
+
             Shell.Current.GoToAsync("//ConversationPage");
         }
         catch (Exception ex)
         {
-            Current.MainPage.DisplayAlert("alert", ex.Message, "ok");
+            Current.MainPage.DisplayAlert("Alert", ex.Message, "Ok");
         }
     }
-    
 }

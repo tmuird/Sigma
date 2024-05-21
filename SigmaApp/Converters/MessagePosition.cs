@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace SigmaApp.Converters
 {
@@ -11,25 +8,20 @@ namespace SigmaApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-           
-            if ((bool)value)
+            if (value is bool isMine)
             {
-                return new Thickness(250, 0, 0, 0);
+                if (targetType == typeof(LayoutOptions))
+                {
+                    return isMine ? LayoutOptions.End : LayoutOptions.Start;
+                }
+                return isMine ? new Thickness(50, 5, 5, 5) : new Thickness(5, 5, 50, 5);
             }
-            else
-            {
-                return new Thickness(0, 0, 0, 0);
-            }
-                    
-            
-                
-           
-            
+            throw new InvalidCastException("Expected a boolean value.");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return null;
+            throw new NotImplementedException();
         }
     }
 }

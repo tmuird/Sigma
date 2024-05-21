@@ -1,84 +1,77 @@
-using Android.OS;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Maui.Hosting;
 using SigmaApp.Data;
 using SigmaApp.Models;
 
-namespace SigmaApp.Views;
-
-public partial class AddContactPage : ContentPage
+namespace SigmaApp.Views
 {
-    private string contactID;
-    private string userKey;
-    public AddContactPage()
+    public partial class AddContactPage : ContentPage
     {
-        InitializeComponent();
+        private string contactID;
+        private string userKey;
 
-
-    }
-
-    /// <summary>
-    /// click event for add button 
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private async void Add_Clicked(object sender, EventArgs e)
-    {
-
-        contactID = name.Text.ToString();
-        try
+        public AddContactPage()
         {
-            if (App.chat.api.GetUserExists(contactID).GetAwaiter().GetResult())
+            InitializeComponent();
+        }
+
+        private async void Add_Clicked(object sender, EventArgs e)
+        {
+            contactID = name.Text;
+
+            if (string.IsNullOrEmpty(contactID))
             {
-                if (!App.chat.Contacts.Any(o => o.UserID == contactID))
+                await DisplayAlert("Alert", "Please enter a username", "OK");
+                return;
+            }
+
+            try
+            {
+                if (await App.chat.Api.GetUserExists(contactID))
                 {
-                    //InitializeComponent();
-                    try
+                    if (!App.chat.Contacts.Any(o => o.UserID == contactID))
                     {
-                        userKey = App.chat.api.GetKey(contactID).GetAwaiter().GetResult();
-                        Console.WriteLine($"Retrieved key successfully {userKey}");
+                        try
+                        {
+                            userKey = await App.chat.Api.GetKey(contactID);
+                            Console.WriteLine($"Retrieved key successfully {userKey}");
+                        }
+                        catch (Exception ex)
+                        {
+                            await DisplayAlert("Alert", ex.Message, "OK");
+                            return;
+                        }
 
-                        //await App.chat.Connect();
-                    }
-                    catch (Exception ex)
-                    {
-                        await DisplayAlert("Alert", ex.Message, "OK");
-                        // Possible that device doesn't support secure storage on device.
-                    }
-                    User addedUser = new User()
-                    {
-                        PublicKey = userKey,
-                        UserID = contactID,
-                        
-                    };
+                        var addedUser = new User()
+                        {
+                            PublicKey = userKey,
+                            UserID = contactID
+                        };
 
-                    App.chat.Contacts.Add(addedUser);
-                    using (var context = new LocalContext())
-                    {
-                        context.Users.Add(addedUser);
-                        context.Entry(addedUser).State = EntityState.Detached;
-                        context.SaveChanges();
+                        App.chat.Contacts.Add(addedUser);
+
+                        using (var context = new LocalContext())
+                        {
+                            context.Users.Add(addedUser);
+                            context.Entry(addedUser).State = EntityState.Detached;
+                            await context.SaveChangesAsync();
+                        }
+
+                        await Shell.Current.GoToAsync("//ContactPage");
                     }
-                     
-                    await Shell.Current.GoToAsync("//ContactPage");
+                    else
+                    {
+                        await DisplayAlert("Alert", "This contact already exists!", "OK");
+                    }
                 }
                 else
                 {
-                    await DisplayAlert("Alert", "This contact already exists!", "OK");
+                    await DisplayAlert("Alert", "A user with this name doesn't exist!", "OK");
                 }
-
             }
-            else
+            catch (Exception ex)
             {
-                await DisplayAlert("Alert", "A user with this name doesn't exist!", "OK");
+                await DisplayAlert("Alert", ex.Message, "OK");
             }
         }
-        catch (Exception ex)
-        {
-
-            await DisplayAlert("Alert", ex.Message, "OK");
-        }
-       
-
     }
 }

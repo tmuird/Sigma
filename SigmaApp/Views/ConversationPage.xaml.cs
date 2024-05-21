@@ -1,14 +1,11 @@
-namespace SigmaApp.Views;
-
-public partial class ConversationPage : ContentPage
-
+namespace SigmaApp.Views
 {
-
-    public ConversationPage()
+    public partial class ConversationPage : ContentPage
     {
-        InitializeComponent();
-        //FriendsViewModel contacts = new FriendsViewModel();
-
-        this.BindingContext = App.chat;
+        public ConversationPage()
+        {
+            InitializeComponent();
+            this.BindingContext = App.chat;
+        }
     }
 }

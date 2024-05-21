@@ -1,136 +1,72 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodel="clr-namespace:SigmaApp.ViewModels"
              xmlns:converters="clr-namespace:SigmaApp.Converters"
-             xmlns:model="clr-namespace:SigmaApp.Models"
              x:Class="SigmaApp.Views.MessagePage"
              Title="MessagePage"
              BackgroundColor="White"
              Shell.FlyoutBehavior="Disabled"
-             Shell.TabBarIsVisible="False"
-             >
+             Shell.TabBarIsVisible="False">
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:MessagePosition x:Key="PositionConverter"/>
             <converters:MessageColour x:Key="ColourConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
-    <Grid Margin ="10,10,10,10">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-   
-        
-                
-        <StackLayout Grid.Row="1" VerticalOptions="FillAndExpand">
-            <Label Text="{Binding CurrentConvo.Recipient.UserID}" FontFamily="Urbanist#800" FontSize="48" FontAttributes="Bold" TextColor="#FF000000" VerticalOptions="Start" />
-            <ListView 
-            x:Name="MessageList"
-            ItemsSource="{Binding CurrentConvo.Messages}" 
-                  
-                  SelectionMode="None"
-                  SeparatorVisibility="None"
-                  HasUnevenRows="true"
-               
-                  >
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <AbsoluteLayout  
-                               
-                                      HorizontalOptions="FillAndExpand"
-                                       MaximumHeightRequest="40"
-                                      VerticalOptions="FillAndExpand">
 
-                                <Frame
-                                        Margin="{Binding IsMine, Converter={StaticResource PositionConverter}}"
-                                        Padding="10,10,10,10"
-                                        BackgroundColor="{Binding IsMine, Converter={StaticResource ColourConverter}}"
-                                        CornerRadius="15"
-                                        HasShadow="False"
-                                        HorizontalOptions="FillAndExpand"
-                                        IsClippedToBounds="True"
-                                        VerticalOptions="FillAndExpand">
-                                    <StackLayout Orientation="Vertical" >
+        <Label Text="{Binding CurrentConvo.Recipient.UserID}" FontSize="48" FontAttributes="Bold" TextColor="Black" Grid.Row="0" Grid.ColumnSpan="2"/>
 
-                                        <Label
-                                                FontAttributes="None"
-                                                FontSize="10"
-                                                HorizontalOptions="Start"
-                                                Text="{Binding Sender.UserID}"
-                                                TextColor="Black" />
-
-                                        <Label
-                                                FontAttributes="Bold"
-                                                IsVisible="true"
-                                                Text="{Binding Content}"
-                                                TextColor="Black" />
-
-                                        <StackLayout Orientation="Horizontal">
-                                            <Label
-                                           
-                                                    FontAttributes="Italic"
-                                                    FontSize="10"
-                                                    HorizontalOptions="Start"
-                                                    Text="{Binding Creation}"
-                                                    TextColor="Black" />
-                                        </StackLayout>
-
+        <ListView x:Name="MessageList" ItemsSource="{Binding CurrentConvo.Messages}" SelectionMode="None" SeparatorVisibility="None" HasUnevenRows="true" Grid.Row="1" Grid.ColumnSpan="2">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                            <Frame Margin="{Binding IsMine, Converter={StaticResource PositionConverter}}" 
+                                   Padding="10" 
+                                   BackgroundColor="{Binding IsMine, Converter={StaticResource ColourConverter}}" 
+                                   CornerRadius="15" 
+                                   HasShadow="False" 
+                                   IsClippedToBounds="True" 
+                                   HorizontalOptions="{Binding IsMine, Converter={StaticResource PositionConverter}, ConverterParameter=HorizontalOptions}"
+                                   VerticalOptions="FillAndExpand">
+                                <StackLayout Orientation="Vertical">
+                                    <Label FontAttributes="None" FontSize="10" HorizontalOptions="Start" Text="{Binding Sender.UserID}" TextColor="Black" />
+                                    <Label FontAttributes="Bold" Text="{Binding Content}" TextColor="Black" />
+                                    <StackLayout Orientation="Horizontal">
+                                        <Label FontAttributes="Italic" FontSize="10" HorizontalOptions="Start" Text="{Binding Creation}" TextColor="Black" />
                                     </StackLayout>
-                                </Frame>
-       
-                            </AbsoluteLayout>
+                                </StackLayout>
+                            </Frame>
+                        </AbsoluteLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
-
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-
-            </ListView>
-
-        </StackLayout>
-        
-        <Grid Grid.Row="1" Grid.VerticalOptions="End">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-          
-            
-              <Frame Grid.Row="1"
-                   Grid.Column="0"
-                   CornerRadius="45"
-                   HasShadow="True"
-                   IsClippedToBounds="True"
-                   Padding="15,0,0,0"
-                   >
-                <Grid Padding="0,0,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+            <Frame Grid.Column="0" CornerRadius="45" HasShadow="True" IsClippedToBounds="True" Padding="15,0,0,0">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Entry x:Name="message" Text="{Binding CurrentMessage}" TextColor="Black" Grid.Row="0" Grid.ColumnSpan="200" >
-                     
-
-                    </Entry>
+                    <Entry x:Name="messageEntry" Text="{Binding CurrentMessage}" TextColor="Black" Grid.Column="0" />
                 </Grid>
-              </Frame>
-            <Button Text="Send" Clicked="Send_Clicked"  BackgroundColor="#3ddc97" Command="{Binding SendMessageCommand}" Grid.Row="0" Grid.Column="1" CornerRadius="20" VerticalOptions="End"></Button>
-
-
+            </Frame>
+            <Button Text="Send" Clicked="Send_Clicked" BackgroundColor="#3ddc97" Command="{Binding SendMessageCommand}" Grid.Column="1" CornerRadius="20" VerticalOptions="End"/>
         </Grid>
-       
     </Grid>
-    
 </ContentPage>

@@ -1,11 +1,11 @@
-namespace SigmaApp.Views;
-
-public partial class ContactPage : ContentPage
+namespace SigmaApp.Views
 {
-    public ContactPage()
+    public partial class ContactPage : ContentPage
     {
-        InitializeComponent();
-
-        this.BindingContext = App.chat;
+        public ContactPage()
+        {
+            InitializeComponent();
+            this.BindingContext = App.chat;
+        }
     }
 }

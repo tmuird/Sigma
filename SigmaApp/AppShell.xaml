@@ -55,7 +55,7 @@
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor"
-                                            Value="{x:OnPlatform UWP=Transparent, iOS=White}" />
+                                            Value="{x:OnPlatform WinUI=Transparent, iOS=White}" />
                                     <Setter TargetName="FlyoutItemLabel"
                                             Property="Label.TextColor"
                                             Value="{StaticResource PrimaryColor}" />
