@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using Microsoft.Maui.Controls;
-
+﻿using System.Globalization;
 namespace SigmaApp.Converters
 {
     public class MessageColour : IValueConverter
@@ -10,7 +7,7 @@ namespace SigmaApp.Converters
         {
             if (value is bool isMine)
             {
-                return isMine ? Color.FromArgb("#DCF8C6") : Color.FromArgb("#FFFFFF");
+                return isMine ? Color.FromHex("#DCF8C6") : Color.FromHex("#FFFFFF");
             }
             throw new InvalidCastException("Expected a boolean value.");
         }
@@ -21,3 +18,4 @@ namespace SigmaApp.Converters
         }
     }
 }
+

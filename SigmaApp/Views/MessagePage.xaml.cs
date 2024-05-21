@@ -20,10 +20,10 @@ namespace SigmaApp.Views
         {
             try
             {
-                if (CurrentConversation.Messages.Count > 0)
-                {
-                    MessageList.ScrollTo(CurrentConversation.Messages[CurrentConversation.Messages.Count - 1], ScrollToPosition.End, true);
-                }
+                //if (CurrentConversation.Messages.Count > 0)
+                //{
+                //    MessageList.ScrollTo(CurrentConversation.Messages[CurrentConversation.Messages.Count - 1], 0, true);
+                //}
             }
             catch (Exception ex)
             {

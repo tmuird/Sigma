@@ -1,19 +1,13 @@
-﻿using System;
-using System.Globalization;
-using Microsoft.Maui.Controls;
-
+﻿using System.Globalization;
 namespace SigmaApp.Converters
 {
+
     public class MessagePosition : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool isMine)
             {
-                if (targetType == typeof(LayoutOptions))
-                {
-                    return isMine ? LayoutOptions.End : LayoutOptions.Start;
-                }
                 return isMine ? new Thickness(50, 5, 5, 5) : new Thickness(5, 5, 50, 5);
             }
             throw new InvalidCastException("Expected a boolean value.");
@@ -25,3 +19,4 @@ namespace SigmaApp.Converters
         }
     }
 }
+

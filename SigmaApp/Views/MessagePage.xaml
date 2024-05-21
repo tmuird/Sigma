@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:SigmaApp.Converters"
@@ -31,14 +30,7 @@
                 <DataTemplate>
                     <ViewCell>
                         <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                            <Frame Margin="{Binding IsMine, Converter={StaticResource PositionConverter}}" 
-                                   Padding="10" 
-                                   BackgroundColor="{Binding IsMine, Converter={StaticResource ColourConverter}}" 
-                                   CornerRadius="15" 
-                                   HasShadow="False" 
-                                   IsClippedToBounds="True" 
-                                   HorizontalOptions="{Binding IsMine, Converter={StaticResource PositionConverter}, ConverterParameter=HorizontalOptions}"
-                                   VerticalOptions="FillAndExpand">
+                            <Frame Margin="{Binding IsMine, Converter={StaticResource PositionConverter}}" Padding="10" BackgroundColor="{Binding IsMine, Converter={StaticResource ColourConverter}}" CornerRadius="15" HasShadow="False" HorizontalOptions="FillAndExpand" IsClippedToBounds="True" VerticalOptions="FillAndExpand">
                                 <StackLayout Orientation="Vertical">
                                     <Label FontAttributes="None" FontSize="10" HorizontalOptions="Start" Text="{Binding Sender.UserID}" TextColor="Black" />
                                     <Label FontAttributes="Bold" Text="{Binding Content}" TextColor="Black" />

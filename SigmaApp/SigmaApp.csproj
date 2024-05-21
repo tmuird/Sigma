@@ -129,5 +129,7 @@
     <PackageReference Update="Microsoft.Maui.Controls.Compatibility" Version="8.0.40" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionSigmaAppHideInfoBar="True" /></VisualStudio></ProjectExtensions>
+
 </Project>
 

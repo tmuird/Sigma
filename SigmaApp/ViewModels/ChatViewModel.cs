@@ -49,7 +49,7 @@ namespace SigmaApp.ViewModels
         public ICommand SendMessageCommand { get; private set; }
         public ICommand LogoutCommand { get; private set; }
         public Dictionary<string, byte[]> UserKeys { get; private set; }
-        private byte[] _myRsaAes;
+        private byte[] clientKeyCipher;
         public Aes AesService { get; private set; }
 
         public ChatViewModel()
@@ -95,53 +95,90 @@ namespace SigmaApp.ViewModels
         private void InitializeSignalREvents()
         {
             _connection.On<Message>("Receive", OnMessageReceived);
-            _connection.On<string[]>("ReceiveRSA", OnReceiveRSAKey);
+            _connection.On<string[]>("ReceiveRSA", OnReceiveRSAAESKey);
         }
-
         public void InitCrypt()
         {
-            // Initialize AES service
+            AesService = Aes.Create();
             AesService.Padding = PaddingMode.PKCS7;
             AesService.GenerateKey();
             AesService.GenerateIV();
         }
-
         private async void OnMessageReceived(Message message)
         {
             try
             {
-                Console.WriteLine($"Received Message (Encrypted): {message.Content}");
-
                 if (string.IsNullOrEmpty(message.Content))
                 {
                     await App.Current.MainPage.DisplayAlert("Warning", "Received message content is empty", "Ok");
                     return;
                 }
 
-                string localHMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(AesService.Key, Convert.FromBase64String(message.Content), _myRsaAes)), Convert.ToBase64String(AesService.Key));
-                if (message.HMAC != localHMAC)
+                Console.WriteLine("Step 1: Received Message Content");
+                Console.WriteLine($"Received Message: {message.Content}");
+
+                byte[] contentBytes;
+                try
                 {
-                    await App.Current.MainPage.DisplayAlert("Warning", "Invalid hash", "Ok");
+                    contentBytes = Convert.FromBase64String(message.Content);
+                    Console.WriteLine("Step 2: Converted Message Content from Base64 to Byte Array");
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine($"Error converting message content from Base64: {ex.Message}");
+                    await App.Current.MainPage.DisplayAlert("Warning", "Message content is not a valid Base64 string", "Ok");
                     return;
                 }
 
-                message.MessageID = null;
-                message.IsMine = false;
-
-                Console.WriteLine($"Encrypted Content Before Decryption: {message.Content}");
-                Console.WriteLine($"Init Vector: {message.InitVector}");
-
-                // Convert the AES key to a base64 string for logging
                 if (UserKeys.TryGetValue(message.Sender.UserID, out byte[] aesKey))
                 {
                     Console.WriteLine($"AES Key: {Convert.ToBase64String(aesKey)}");
+
+                    string localHMAC;
+                    try
+                    {
+                        localHMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(aesKey, contentBytes, Convert.FromBase64String(message.InitVector))), Convert.ToBase64String(aesKey));
+                        Console.WriteLine($"Step 4: Generated Local HMAC: {localHMAC}");
+                        Console.WriteLine($"Received HMAC: {message.HMAC}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error generating HMAC: {ex.Message}");
+                        await App.Current.MainPage.DisplayAlert("Warning", "Error generating HMAC", "Ok");
+                        return;
+                    }
+
+                    if (message.HMAC != localHMAC)
+                    {
+                        await App.Current.MainPage.DisplayAlert("Warning", "Invalid hash", "Ok");
+                        return;
+                    }
+                    Console.WriteLine("Step 5: HMAC Verification Successful");
+
+                    try
+                    {
+                        message.Content = DecryptStringFromBytes_Aes(contentBytes, aesKey, Convert.FromBase64String(message.InitVector));
+                        Console.WriteLine($"Decrypted Content: {message.Content}");
+                    }
+                    catch (Exception decryptionEx)
+                    {
+                        Console.WriteLine($"Decryption Error: {decryptionEx.Message}");
+                        if (decryptionEx.InnerException != null)
+                        {
+                            Console.WriteLine($"Inner Decryption Error: {decryptionEx.InnerException.Message}");
+                        }
+                        await App.Current.MainPage.DisplayAlert("Warning", "Decryption failed", "Ok");
+                        return;
+                    }
+
+                    AddOrUpdateConversation(message);
                 }
-
-                message.Content = DecryptStringFromBytes_Aes(Convert.FromBase64String(message.Content), aesKey, Convert.FromBase64String(message.InitVector));
-
-                Console.WriteLine($"Decrypted Content: {message.Content}");
-
-                AddOrUpdateConversation(message);
+                else
+                {
+                    Console.WriteLine($"AES Key for user {message.Sender.UserID} not found.");
+                    await App.Current.MainPage.DisplayAlert("Warning", $"AES Key for user {message.Sender.UserID} not found.", "Ok");
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -157,13 +194,16 @@ namespace SigmaApp.ViewModels
 
 
 
+
+
+
+
         private void AddOrUpdateConversation(Message message)
         {
             try
             {
             
-                Device.BeginInvokeOnMainThread(() =>
-                {
+              
                     var existingConvo = Conversations.FirstOrDefault(c => c.Recipient.UserID == message.Sender.UserID);
 
                     if (existingConvo != null)
@@ -183,7 +223,7 @@ namespace SigmaApp.ViewModels
                         Conversations.Add(newConvo);
                         CurrentConvo = newConvo;
                     }
-                });
+              
             }
             catch (Exception ex)
             {
@@ -199,7 +239,7 @@ namespace SigmaApp.ViewModels
 
 
 
-        private async void OnReceiveRSAKey(string[] key)
+        private async void OnReceiveRSAAESKey(string[] key)
         {
             try
             {
@@ -288,17 +328,21 @@ namespace SigmaApp.ViewModels
                 }
 
                 var newConvo = new Conversation { Recipient = receiver };
-                _myRsaAes = crypto.RSA.Encrypt(Convert.FromBase64String(receiver.PublicKey.Split(",")[0]), Convert.FromBase64String(receiver.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
-                SendRSAAES(Convert.ToBase64String(_myRsaAes), receiver.UserID);
                 Conversations.Add(newConvo);
                 CurrentConvo = newConvo;
-                await Shell.Current.GoToAsync($"MessagePage?recipient={receiver}");
 
+                // Save the conversation to the database
                 using (var context = new LocalContext())
                 {
                     context.Conversations.Add(newConvo);
                     await context.SaveChangesAsync();
                 }
+
+                // Encrypt AES key and send it
+                clientKeyCipher = crypto.RSA.Encrypt(Convert.FromBase64String(receiver.PublicKey.Split(",")[0]), Convert.FromBase64String(receiver.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
+                SendRSAAES(Convert.ToBase64String(clientKeyCipher), receiver.UserID);
+
+                await Shell.Current.GoToAsync($"MessagePage?recipient={receiver}");
             }
             catch (Exception ex)
             {
@@ -306,11 +350,13 @@ namespace SigmaApp.ViewModels
             }
         }
 
+
         private async Task SendToUser(Message message)
         {
             try
             {
                 message.IsMine = true;
+
                 Console.WriteLine($"Sending message: {message.Content}");
                 await _connection.InvokeAsync("SendToUser", message);
             }
@@ -362,8 +408,8 @@ namespace SigmaApp.ViewModels
             try
             {
                 CurrentConvo = conversation;
-                _myRsaAes = crypto.RSA.Encrypt(Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[0]), Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
-                SendRSAAES(Convert.ToBase64String(_myRsaAes), conversation.Recipient.UserID);
+                clientKeyCipher = crypto.RSA.Encrypt(Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[0]), Convert.FromBase64String(conversation.Recipient.PublicKey.Split(",")[1]), Convert.ToBase64String(AesService.Key));
+                SendRSAAES(Convert.ToBase64String(clientKeyCipher), conversation.Recipient.UserID);
                 await Shell.Current.GoToAsync($"MessagePage?recipient={conversation.Recipient.UserID}");
             }
             catch (Exception ex)
@@ -386,18 +432,27 @@ namespace SigmaApp.ViewModels
         {
             try
             {
-                message.ConversationID = CurrentConvo.ConversationID;
-                (Conversations.Single(p => p.Recipient == CurrentConvo.Recipient)).RecentMessage = message.Content;
-                CurrentConvo.Messages.Add(message);
-                using (var context = new LocalContext())
+                var conversation = Conversations.SingleOrDefault(p => p.Recipient == CurrentConvo.Recipient);
+                if (conversation != null)
                 {
-                    context.Messages.Add(message);
-                    context.SaveChanges();
+                    message.ConversationID = conversation.ConversationID;
+                    conversation.RecentMessage = message.Content;
+                    conversation.Messages.Add(message);
+
+                    using (var context = new LocalContext())
+                    {
+                        context.Messages.Add(message);
+                        context.SaveChanges();
+                    }
+                }
+                else
+                {
+                    App.Current.MainPage.DisplayAlert("Warning", "Conversation not found", "Ok");
                 }
             }
             catch (Exception ex)
             {
-                App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex, "Ok");
+                App.Current.MainPage.DisplayAlert("Warning", "Error: " + ex.Message, "Ok");
             }
         }
 
@@ -419,11 +474,12 @@ namespace SigmaApp.ViewModels
 
                 AddMessage(message);
 
+                // Encrypt the message content using AES
                 byte[] encryptedBytes = EncryptStringToBytes_Aes(CurrentMessage, AesService.Key, AesService.IV);
                 Console.WriteLine($"Encrypted Message Bytes: {BitConverter.ToString(encryptedBytes)}");
 
                 message.Content = Convert.ToBase64String(encryptedBytes);
-                message.HMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(AesService.Key, encryptedBytes, _myRsaAes)), Convert.ToBase64String(AesService.Key));
+                message.HMAC = Hashing.GetHMAC(Convert.ToBase64String(Combine(AesService.Key, encryptedBytes, AesService.IV)), Convert.ToBase64String(AesService.Key));
                 message.InitVector = Convert.ToBase64String(AesService.IV);
 
                 Console.WriteLine($"Encrypted Message: {message.Content}");
@@ -441,14 +497,18 @@ namespace SigmaApp.ViewModels
 
 
 
+
         private static byte[] Combine(byte[] first, byte[] second, byte[] third)
-        {
-            byte[] ret = new byte[first.Length + second.Length + third.Length];
-            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
-            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
-            Buffer.BlockCopy(third, 0, ret, first.Length + second.Length, third.Length);
-            return ret;
-        }
+{
+    byte[] combined = new byte[first.Length + second.Length + third.Length];
+    Buffer.BlockCopy(first, 0, combined, 0, first.Length);
+    Buffer.BlockCopy(second, 0, combined, first.Length, second.Length);
+    Buffer.BlockCopy(third, 0, combined, first.Length + second.Length, third.Length);
+
+    Console.WriteLine($"Combined Byte Array: {BitConverter.ToString(combined)}");
+    return combined;
+}
+
 
         public byte[] EncryptStringToBytes_Aes(string plainText, byte[] Key, byte[] IV)
         {
